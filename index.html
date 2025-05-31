@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hand Gesture Web Navigation</title>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4/hands.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils@0.3/camera_utils.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils@0.3/drawing_utils.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden; /* Prevent horizontal scrollbar */
+            min-height: 150vh; /* Make body scrollable for demo */
+            padding-top: 50px; /* Space for the status overlay */
+        }
+
+        /* Hide the video and canvas elements */
+        #video, #canvas {
+            display: none;
+            /* Alternatively, position them off-screen: */
+            /* position: fixed;
+            left: -9999px;
+            top: -9999px; */
+        }
+
+        #customCursor {
+            position: fixed;
+            width: 20px;
+            height: 20px;
+            background-color: rgba(255, 0, 0, 0.7); /* Red with transparency */
+            border-radius: 50%;
+            pointer-events: none; /* Allows clicks to pass through to elements below */
+            transform: translate(-50%, -50%); /* Center the cursor on the hand point */
+            z-index: 10000; /* Ensure it's on top of everything */
+            border: 2px solid rgba(255, 255, 255, 0.8);
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+            transition: width 0.1s, height 0.1s, background-color 0.1s; /* Smooth animation for click feedback */
+        }
+
+        #customCursor.clicking {
+            width: 30px;
+            height: 30px;
+            background-color: rgba(0, 255, 0, 0.8); /* Green when clicking */
+        }
+
+        #statusOverlay {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            background-color: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 10px 15px;
+            border-radius: 8px;
+            font-size: 14px;
+            z-index: 9999;
+        }
+
+        .content {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .content h1, .content h2 {
+            color: #333;
+        }
+
+        .content p {
+            line-height: 1.6;
+            color: #555;
+        }
+
+        .content button {
+            padding: 10px 20px;
+            font-size: 18px;
+            margin: 10px;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+            background-color: #007bff;
+            color: white;
+            transition: background-color 0.3s ease;
+        }
+
+        .content button:hover {
+            background-color: #0056b3;
+        }
+
+        .content a {
+            color: #007bff;
+            text-decoration: none;
+        }
+        .content a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div id="statusOverlay">
+        Status: Initializing...
+        <br>Gesture: None
+    </div>
+
+    <video id="video" autoplay playsinline></video>
+    <canvas id="canvas"></canvas>
+
+    <div id="customCursor"></div>
+
+    <div class="content">
+        <h1>Welcome to Hand Gesture Web Navigation!</h1>
+        <p>
+            This page demonstrates controlling a web browser using hand gestures.
+            Move your hand to control the red cursor.
+            Bring your index finger and thumb together (a pinch gesture) to simulate a click.
+            Try scrolling down by moving your open hand downwards.
+        </p>
+
+        <h2>Interactive Elements:</h2>
+        <button id="demoButton1">Click Me (Button 1)</button>
+        <button id="demoButton2">Click Me (Button 2)</button>
+
+        <p>
+            This is a paragraph of text. Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+            Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+            Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+            Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
+            Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+        </p>
+
+        <a href="https://www.google.com" target="_blank">Visit Google (will open in new tab)</a>
+
+        <h2>More Content to Scroll:</h2>
+        <p>
+            Here's more content to make the page scrollable. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas.
+            Vestibulum tortor quam, feugiat vitae, ultricies eget, tempor sit amet, ante. Donec eu libero sit amet quam egestas semper.
+            Aenean ultricies mi vitae est. Mauris placerat eleifend leo. Quisque sit amet est et sapien ullamcorper pharetra.
+            Vestibulum erat wisi, condimentum sed, commodo vitae, ornare sit amet, wisi. Aenean fermentum, elit eget tincidunt condimentum, eros ipsum rutrum orci,
+            sagittis tempus lacus enim ac dui. Donec non enim in turpis pulvinar facilisis. Ut felis. Praesent dapibus, neque id cursus faucibus,
+            tortor neque egestas augu eu, eu vulputate magna eros eu erat. Aliquam erat volutpat. Nam dui ligula, fringilla a, euismod sodales,
+            sollicitudin vel, wisi.
+        </p>
+        <p>
+            Cras non dolor. Nullam dictum felis eu pede mollis pretium. Integer tincidunt. Cras dapibus.
+            Vivamus elementum semper nisi. Aenean vulputate eleifend tellus. Aenean leo ligula, porttitor eu,
+            consequat vitae, eleifend ac, enim. Aliquam lorem ante, dapibus in, viverra quis, feugiat a,
+            tellus. Phasellus viverra nulla ut metus varius laoreet. Quisque rutrum. Aenean imperdiet.
+            Etiam ultricies nisi vel augue. Curabitur ullamcorper ultricies nisi. Nam eget dui.
+        </p>
+        <p>
+            Etiam rhoncus. Maecenas tempus, tellus eget condimentum rhoncus, sem quam semper libero,
+            sit amet adipiscing sem neque sed ipsum. Nam quam nunc, blandit vel, luctus pulvinar,
+            hendrerit id, lorem. Maecenas nec odio et ante tincidunt tempus. Donec vitae sapien ut libero
+            venenatis faucibus. Nullam quis ante. Etiam sit amet orci eget eros faucibus tincidunt.
+            Duis leo. Sed fringilla mauris sit amet nibh. Donec sodales sagittis magna. Sed consequat,
+            leo eget bibendum sodales, augue velit cursus nunc, quis gravida magna mi a libero.
+            Fusce vulputate eleifend sapien. Vestibulum purus quam, scelerisque ut, mollis sed,
+            nonummy id, metus. Nullam accumsan lorem in dui.
+        </p>
+    </div>
+
+    <script src = "main.js">
+
+    </script>
+</body>
+</html>
