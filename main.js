@@ -60,7 +60,6 @@
                  "BLUE": new Audio('colors/blue.mp3'),
                  "GREEN": new Audio('colors/green.mp3'),
                  "PURPLE": new Audio('colors/purple.mp3'),
-                 "ORANGE": new Audio('colors/orange.mp3'),
                  "PINK": new Audio('colors/pink.mp3'),
                  "BROWN": new Audio('colors/brown.mp3'),
                  "BLACK": new Audio('colors/black.mp3'),
@@ -72,11 +71,8 @@
                 "LION": new Audio('animals/lion.mp3'),
                 "ELEPHANT": new Audio('animals/elephant.mp3'),
                 "MONKEY": new Audio('animals/monkey.mp3'),
-                "BEAR": new Audio('animals/bear.mp3'),
-                "RABBIT": new Audio('animals/rabbit.mp3'),
                 "DUCK": new Audio('animals/duck.mp3'),
                 "COW": new Audio('animals/cow.mp3'),
-                "PIG": new Audio('animals/pig.mp3')
             },
             alphabets: {
                 // For English:
@@ -267,7 +263,6 @@
                     { name: "GREEN", color: "#4CAF50" },
                     { name: "YELLOW", color: "#FFEB3B" }, // Removed text_color, not needed for background
                     { name: "PURPLE", color: "#9C27B0" },
-                    { name: "ORANGE", color: "#FF9800" },
                     { name: "PINK", color: "#FF69B4" },
                     { name: "BROWN", color: "#8B4513" },
                     { name: "BLACK", color: "#000000" },
@@ -299,11 +294,8 @@
                     { name: "LION", display: "🦁 LION!" },
                     { name: "ELEPHANT", display: "🐘 ELEPHANT!" },
                     { name: "MONKEY", display: "🐒 MONKEY!" },
-                    { name: "BEAR", display: "🐻 BEAR!" },
-                    { name: "RABBIT", display: "🐰 RABBIT!" },
                     { name: "DUCK", display: "🦆 DUCK!" },
                     { name: "COW", "display": "🐄 COW!" },
-                    { name: "PIG", display: "🐷 PIG!" }
                 ],
                 currentIndex: 0
             },
