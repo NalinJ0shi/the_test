@@ -1,0 +1,455 @@
+:root {
+        --sidebar-width: 200px;
+        --main-bg-color: #f7e6f0; /* Light pink background */
+        --category-btn-bg: #ff69b4; /* Pink button */
+        --category-btn-hover: #e04b9d; /* Darker pink */
+        --content-panel-bg: #edf8f0; /* Light green panel */
+        --heading-color-1: #d23d8c; /* Pink for main headings */
+        --heading-color-2: #4CAF50; /* Green for subheadings */
+        --text-color: #555;
+        --highlight-color: #FFD700; /* Gold/Yellow for highlights */
+
+        /* Onboarding specific colors */
+        --onboarding-bg: rgba(0, 0, 0, 0.8);
+        --onboarding-text: white;
+        --onboarding-button-bg: #4CAF50; /* Green */
+        --onboarding-button-hover: #45a049; /* Darker green */
+
+        /* Pause specific colors */
+        --pause-overlay-bg: rgba(0, 0, 0, 0.7); /* Adjusted opacity */
+        --pause-text-color: white;
+        --pause-button-bg: #2196F3; /* Blue */
+        --pause-button-hover: #1976D2; /* Darker Blue */
+    }
+
+    body {
+        font-family: 'Open Sans', sans-serif;
+        margin: 0;
+        padding: 0;
+        overflow: hidden; /* Hide scrollbars, we control content */
+        background-color: var(--main-bg-color);
+        display: flex;
+        height: 100vh; /* Full viewport height */
+        box-sizing: border-box;
+    }
+
+    /* Hide the video and canvas elements (used by main.js) */
+    #video, #canvas {
+        display: none;
+    }
+
+    /* Custom Cursor (styled by main.js, but ensure it's on top) */
+    #customCursor {
+        position: fixed;
+        width: 20px;
+        height: 20px;
+        background-color: rgba(255, 0, 0, 0.7); /* Red with transparency */
+        border-radius: 50%;
+        pointer-events: none; /* Allows clicks to pass through to elements below */
+        transform: translate(-50%, -50%); /* Center the cursor on the hand point */
+        z-index: 10000; /* Ensure it's on top of everything */
+        border: 2px solid rgba(255, 255, 255, 0.8);
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+        transition: width 0.1s, height 0.1s, background-color 0.1s; /* Smooth animation for click feedback */
+    }
+
+    #customCursor.clicking {
+        width: 30px;
+        height: 30px;
+        background-color: rgba(0, 255, 0, 0.8); /* Green when clicking */
+    }
+
+    /* Status Overlay (from main.js) */
+    #statusOverlay {
+        position: fixed;
+        top: 10px;
+        right: 10px; /* Changed to right for better visibility with sidebar */
+        background-color: rgba(0, 0, 0, 0.7);
+        color: white;
+        padding: 10px 15px;
+        border-radius: 8px;
+        font-size: 14px;
+        z-index: 9999;
+    }
+
+    /* Sidebar Styling */
+    .sidebar {
+        width: var(--sidebar-width);
+        background-color: var(--main-bg-color);
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+        border-right: 2px solid rgba(0,0,0,0.1);
+        box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+        z-index: 100; /* Ensure it's above content */
+        justify-content: center; /* Vertically center content */
+        align-items: center; /* Horizontally center content */
+        transition: transform 0.3s ease-out, opacity 0.3s ease-out; /* For onboarding hide/show */
+    }
+
+    .sidebar.hidden {
+        transform: translateX(-100%);
+        opacity: 0;
+        pointer-events: none; /* Disable interactions when hidden */
+    }
+
+    .category-button {
+        width: 90%; /* Adjusted width to give some padding */
+        max-width: 180px; /* Added max-width for consistency */
+        padding: 25px 15px;
+        background-color: var(--category-btn-bg);
+        color: white;
+        font-family: 'Fredoka One', cursive;
+        font-size: 1.8em;
+        border: none;
+        border-radius: 15px;
+        cursor: pointer;
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+        transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+        text-shadow: 2px 2px 3px rgba(0,0,0,0.3);
+    }
+
+    .category-button:hover, .category-button.active {
+        background-color: var(--category-btn-hover);
+        transform: translateY(-5px) scale(1.03);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+    }
+
+    /* Reverted Pause Button Style */
+    .pause-button {
+        background-color: #f44336; /* Red for pause */
+    }
+
+    .pause-button:hover {
+        background-color: #d32f2f; /* Darker red on hover */
+    }
+
+
+    /* Main Content Area Styling */
+    .main-content {
+        flex-grow: 1; /* Takes up remaining space */
+        background-color: var(--content-panel-bg);
+        border-radius: 25px; /* Large rounded corners for the panel */
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+        margin: 20px; /* Space around the panel */
+        padding: 40px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        position: relative; /* For cursor interaction and settings icon */
+        overflow: hidden; /* Ensure content stays within bounds */
+        transition: transform 0.3s ease-out, opacity 0.3s ease-out; /* For onboarding hide/show */
+    }
+
+    .main-content.hidden {
+        transform: translateY(20px);
+        opacity: 0;
+        pointer-events: none; /* Disable interactions when hidden */
+    }
+
+    /* Ensure content overlays the color background */
+    .main-content > *:not(.color-background-effect) {
+        position: relative;
+        z-index: 2; /* Place above the background effect */
+    }
+
+    .content-heading {
+        font-family: 'Fredoka One', cursive;
+        color: var(--heading-color-1);
+        font-size: 4em;
+        margin-bottom: 20px;
+        text-shadow: 4px 4px 5px rgba(0,0,0,0.2);
+    }
+
+    .content-subheading {
+        font-family: 'Open Sans', sans-serif;
+        color: var(--text-color);
+        font-size: 1.5em;
+        margin-bottom: 30px;
+    }
+
+    .display-item {
+        font-family: 'Fredoka One', cursive;
+        font-size: 8em; /* Very large text for the item */
+        color: var(--heading-color-2);
+        text-shadow: 6px 6px 8px rgba(0,0,0,0.3);
+        margin-bottom: 40px;
+        transition: transform 0.2s ease-out; /* For subtle animation on change */
+    }
+
+    .display-item.animate {
+        transform: scale(1.1);
+    }
+
+    .instruction-text {
+        font-family: 'Open Sans', sans-serif;
+        font-size: 1.2em;
+        color: var(--text-color);
+        margin-top: 20px;
+        line-height: 1.5;
+    }
+
+    .instruction-highlight {
+        font-weight: bold;
+        color: var(--highlight-color);
+        text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+    }
+
+    /* Specific styles for Color background effect */
+    .color-background-effect {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        border-radius: 25px; /* Match main-content border-radius */
+        z-index: 1; /* Below the content */
+        overflow: hidden; /* Important for animation */
+
+        /* Smoke effect properties */
+        background-size: 200% 200%; /* Larger than element for movement */
+        animation: smokeEffect 15s ease-in-out infinite alternate; /* Smooth, repeating animation */
+        transition: background-image 0.5s ease-in-out; /* Smooth transition for color change */
+    }
+
+    @keyframes smokeEffect {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
+    }
+
+    /* Settings Icon for Alphabet Section - now a standalone icon button */
+    #alphabetSettingsIcon {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        width: 60px; /* Consistent size with other icon buttons */
+        height: 60px; /* Consistent size with other icon buttons */
+        border-radius: 50%;
+        background-color: var(--heading-color-1); /* Pink color for the icon */
+        color: white; /* Icon color */
+        font-family: 'Fredoka One', cursive;
+        font-size: 2.5em; /* Larger icon */
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        border: none;
+        cursor: pointer;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease, color 0.2s ease-in-out;
+        text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+        z-index: 10; /* Ensure it's above other content */
+        padding: 0;
+    }
+
+    #alphabetSettingsIcon:hover, #alphabetSettingsIcon.hovering-to-click {
+        transform: rotate(30deg) scale(1.1); /* Spin and grow on hover */
+        color: var(--highlight-color); /* Change text color on hover */
+        background-color: var(--category-btn-hover); /* Darker pink background */
+    }
+
+
+    /* Onboarding Overlay Styles */
+    .onboarding-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: var(--onboarding-bg);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 10001; /* Above everything else */
+        transition: opacity 0.5s ease-out;
+    }
+
+    .onboarding-overlay.hidden {
+        opacity: 0;
+        pointer-events: none; /* Disable interactions when hidden */
+    }
+
+    .onboarding-content {
+        background-color: rgba(255, 255, 255, 0.95);
+        padding: 40px 60px;
+        border-radius: 20px;
+        text-align: center;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+        max-width: 600px;
+        width: 90%;
+        transform: scale(1);
+        transition: transform 0.3s ease-out;
+    }
+
+    .onboarding-content.good-job {
+        transform: scale(1.1); /* Slightly larger for good job */
+    }
+
+    #onboardingTitle {
+        font-family: 'Fredoka One', cursive;
+        color: var(--heading-color-1);
+        font-size: 3.5em;
+        margin-bottom: 20px;
+        text-shadow: 3px 3px 4px rgba(0,0,0,0.2);
+    }
+
+    #onboardingInstruction {
+        font-family: 'Open Sans', sans-serif;
+        color: var(--text-color);
+        font-size: 1.6em;
+        margin-bottom: 30px;
+        line-height: 1.4;
+    }
+
+    .onboarding-button {
+        display: block;   /* Add this line */
+        margin: 0 auto;   /* Add this line */
+        padding: 20px 40px;
+        background-color: var(--onboarding-button-bg);
+        color: var(--onboarding-text);
+        font-family: 'Fredoka One', cursive;
+        font-size: 2em;
+        border: none;
+        border-radius: 15px;
+        cursor: pointer;
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+        transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+        text-shadow: 2px 2px 3px rgba(0,0,0,0.3);
+    }
+
+    .onboarding-button:hover {
+        background-color: var(--onboarding-button-hover);
+        transform: translateY(-3px) scale(1.02);
+        box-shadow: 0 8px 15px rgba(0, 0, 0, 0.3);
+    }
+
+    /* Pause Overlay Styles */
+    .pause-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: var(--pause-overlay-bg); /* Uses adjusted opacity */
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 10002; /* Above onboarding overlay */
+        transition: opacity 0.5s ease-out;
+    }
+
+    .pause-overlay.hidden {
+        opacity: 0;
+        pointer-events: none; /* Disable interactions when hidden */
+    }
+
+    .pause-content {
+        background-color: rgba(255, 255, 255, 0.95);
+        padding: 40px 60px;
+        border-radius: 20px;
+        text-align: center;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+        max-width: 600px;
+        width: 90%;
+    }
+
+    .pause-title {
+        font-family: 'Fredoka One', cursive;
+        color: var(--heading-color-1);
+        font-size: 4em;
+        margin-bottom: 20px;
+        text-shadow: 3px 3px 4px rgba(0,0,0,0.2);
+    }
+
+    .pause-instruction {
+        font-family: 'Open Sans', sans-serif;
+        color: var(--text-color);
+        font-size: 1.8em;
+        margin-bottom: 30px;
+        line-height: 1.4;
+    }
+
+    .resume-button {
+        background-color: var(--pause-button-bg);
+    }
+
+    .resume-button:hover {
+        background-color: var(--pause-button-hover);
+    }
+
+
+    /* Basic Media Queries for smaller screens */
+    @media (max-width: 900px) {
+        body {
+            flex-direction: column-reverse; /* Changed: sidebar to bottom */
+            height: auto; /* Allow scrolling on smaller screens */
+        }
+        .sidebar {
+            width: 100%;
+            flex-direction: row;
+            justify-content: center;
+            padding: 15px;
+            gap: 15px;
+            border-right: none;
+            border-bottom: none; /* Removed */
+            border-top: 2px solid rgba(0,0,0,0.1); /* Added: border on top */
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.1); /* Adjusted shadow direction */
+        }
+        .category-button {
+            padding: 15px 10px;
+            font-size: 1.2em;
+            flex: 1; /* Distribute space evenly */
+        }
+        .main-content {
+            margin: 15px;
+            padding: 30px;
+        }
+        .content-heading { font-size: 3em; }
+        .content-subheading { font-size: 1.2em; }
+        .display-item { font-size: 6em; }
+        
+        /* Icon button adjustments for smaller screens */
+        #alphabetSettingsIcon {
+            width: 50px;
+            height: 50px;
+            font-size: 2em;
+            top: 10px;
+            right: 10px;
+        }
+
+        #onboardingTitle, .pause-title { font-size: 2.5em; }
+        #onboardingInstruction, .pause-instruction { font-size: 1.2em; }
+        .onboarding-button, .resume-button { font-size: 1.5em; padding: 15px 30px; }
+    }
+
+    @media (max-width: 500px) {
+        .sidebar {
+            flex-wrap: wrap; /* Allow buttons to wrap */
+            gap: 10px;
+        }
+        .category-button {
+            font-size: 1em;
+            padding: 10px 5px;
+        }
+        .content-heading { font-size: 2.2em; }
+        .content-subheading { font-size: 1em; }
+        .display-item { font-size: 4em; }
+        .instruction-text { font-size: 0.9em; }
+        
+        /* Icon button adjustments for smallest screens */
+        #alphabetSettingsIcon {
+            width: 40px;
+            height: 40px;
+            font-size: 1.8em;
+            top: 5px;
+            right: 5px;
+        }
+
+        #onboardingTitle, .pause-title { font-size: 2em; }
+        #onboardingInstruction, .pause-instruction { font-size: 1em; }
+        .onboarding-button, .resume-button { font-size: 1.2em; padding: 10px 20px; }
+        .onboarding-content, .pause-content { padding: 30px 20px; }
+    }
